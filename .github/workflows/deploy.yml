@@ -1,0 +1,35 @@
+name: Deploy GrowPromise Frontend
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+      - name: Add host key to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd ~/growpromise-Web
+            git pull origin main
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
+            sleep 10
+            cd ~/nginx-proxy
+            docker-compose restart nginx-proxy
+            echo "✅ GrowPromise 배포 완료!"
+          EOF
