@@ -52,7 +52,7 @@ const RealIPhoneModel = ({
 
     // 카메라 설정을 modelConfig에 따라 동적으로 조정
     setupCamera(camera, {
-      position: [0, 0.3, 6],
+      position: [0, 0, 6],
       fov: modelConfig.fov,
       responsiveFOV: false,
     });
