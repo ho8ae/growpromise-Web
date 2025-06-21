@@ -100,6 +100,15 @@ const RealIPhoneModel = ({
   };
 
   useEffect(() => {
+    console.log('=== 디버깅 정보 ===');
+    console.log('Current URL:', window.location.href);
+    console.log('Screen size:', window.innerWidth, 'x', window.innerHeight);
+    console.log('Model config:', modelConfig);
+    console.log('Device pixel ratio:', window.devicePixelRatio);
+    console.log('User agent:', navigator.userAgent);
+  }, [modelConfig]);
+
+  useEffect(() => {
     // 마우스/터치 이벤트 핸들러
     const handleStart = (clientX: number, clientY: number) => {
       // 모델과 교차하는지 확인
