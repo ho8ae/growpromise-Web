@@ -1,10 +1,82 @@
-// components/GrowPromiseLanding.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import WorkingGLTFModel from './WorkingGLTFModel';
 
+// 화면 크기별 설정값 타입
+interface ModelConfig {
+  scale: [number, number, number];
+  position: [number, number, number];
+  containerSize: { width: string; height: string };
+  fov: number;
+}
+
+// 화면 크기별 모델 설정
+const getModelConfig = (screenWidth: number): ModelConfig => {
+  if (screenWidth >= 1280) {
+    // Desktop Large (xl)
+    return {
+      scale: [8.0, 8.0, 8.0],
+      position: [0, 0, 0],
+      containerSize: { width: '100%', height: '100%' },
+      fov: 20,
+    };
+  } else if (screenWidth >= 1024) {
+    // Desktop (lg)
+    return {
+      scale: [8.0, 8.0, 8.0],
+      position: [0, 0, 0],
+      containerSize: { width: '100%', height: '100%' },
+      fov: 20,
+    };
+  } else if (screenWidth >= 768) {
+    // Tablet
+    return {
+      scale: [8.0, 8.0, 8.0],
+      position: [0.2, 0, 0],
+      containerSize: { width: '60%', height: '80%' },
+      fov: 15,
+    };
+  } else if (screenWidth >= 480) {
+    // Mobile Large
+    return {
+      scale: [8.0, 8.0, 8.0],
+      position: [0.3, -0.1, 0],
+      containerSize: { width: '50%', height: '70%' },
+      fov: 15,
+    };
+  } else {
+    // Mobile Small
+    return {
+      scale: [8.0, 8.0, 8.0],
+      position: [0.4, -0.1, 0],
+      containerSize: { width: '45%', height: '65%' },
+      fov: 15,
+    };
+  }
+};
+
 const GrowPromiseLanding: React.FC = () => {
-  // 다운로드 버튼 클릭 핸들러
+  const [screenWidth, setScreenWidth] = useState(1200);
+  const [modelConfig, setModelConfig] = useState<ModelConfig>(
+    getModelConfig(1200),
+  );
+
+  // 화면 크기 감지 및 모델 설정 업데이트
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setScreenWidth(width);
+      setModelConfig(getModelConfig(width));
+    };
+
+    // 초기 설정
+    handleResize();
+
+    // 리사이즈 이벤트 리스너
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleAppStoreClick = (): void => {
     window.location.href =
       'https://apps.apple.com/kr/app/%EC%91%A5%EC%91%A5%EC%95%BD%EC%86%8D-%EC%8B%9D%EB%AC%BC%EA%B3%BC-%ED%95%A8%EA%BB%98%ED%95%98%EB%8A%94-%EC%95%BD%EC%86%8D%EA%B4%80%EB%A6%AC/id6746965526';
@@ -21,10 +93,19 @@ const GrowPromiseLanding: React.FC = () => {
         {/* Left Side - 3D iPhone Model */}
         <div className="w-1/2 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-500">
-            {/* 3D iPhone Container */}
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="w-80 h-96">
-                <WorkingGLTFModel modelPath="/models/growpromise_iphone3D.glb" />
+            {/* 3D iPhone Container - 반응형 적용 */}
+            <div className="w-full h-full flex items-center justify-center relative">
+              <div
+                className="relative"
+                style={{
+                  width: modelConfig.containerSize.width,
+                  height: modelConfig.containerSize.height,
+                }}
+              >
+                <WorkingGLTFModel
+                  modelPath="/models/growpromise_iphone3D.glb"
+                  modelConfig={modelConfig}
+                />
               </div>
             </div>
 
@@ -167,38 +248,58 @@ const GrowPromiseLanding: React.FC = () => {
         {/* Top Section - 3D Model & Info */}
         <div className="flex-1 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-500">
-            {/* 3D Model Container */}
-            <div className="absolute top-0 right-0 w-full h-full flex items-center justify-end pr-4">
-              <div className="w-48 h-60">
+            {/* 3D Model Container - 반응형 적용 */}
+            <div className="absolute top-0 right-0 w-full h-full flex items-center justify-end">
+              <div
+                className="relative"
+                style={{
+                  width: modelConfig.containerSize.width,
+                  height: modelConfig.containerSize.height,
+                  marginRight: screenWidth < 480 ? '1rem' : '2rem',
+                }}
+              >
                 <WorkingGLTFModel
                   modelPath="/models/growpromise_iphone3D.glb"
-                  className="relative w-full h-full"
-                  style={{
-                    position: 'absolute',
-                    bottom: '100px',
-                    left: '200px',
-                  }}
+                  modelConfig={modelConfig}
                 />
               </div>
             </div>
 
-            {/* Info Overlay - 좌측에 배치 */}
+            {/* Info Overlay - 화면 크기별 조정 */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6, duration: 0.6 }}
-              className="absolute bottom-8 left-6 text-white z-10 max-w-xs"
+              className={`absolute bottom-8 left-6 text-white z-10 ${
+                screenWidth < 480 ? 'max-w-xs' : 'max-w-sm'
+              }`}
             >
-              <h2 className="text-2xl font-bold mb-2 font-['CookieRun-Regular']">
+              <h2
+                className={`font-bold mb-2 font-['CookieRun-Regular'] ${
+                  screenWidth < 480 ? 'text-xl' : 'text-2xl'
+                }`}
+              >
                 약속을 지키며
               </h2>
-              <h2 className="text-2xl font-bold mb-3 font-['CookieRun-Regular']">
+              <h2
+                className={`font-bold mb-3 font-['CookieRun-Regular'] ${
+                  screenWidth < 480 ? 'text-xl' : 'text-2xl'
+                }`}
+              >
                 함께 성장해요
               </h2>
-              <p className="text-base opacity-90 mb-1 font-['CookieRun-Regular']">
+              <p
+                className={`opacity-90 mb-1 font-['CookieRun-Regular'] ${
+                  screenWidth < 480 ? 'text-sm' : 'text-base'
+                }`}
+              >
                 부모와 아이가 함께 만드는 약속
               </p>
-              <p className="text-sm opacity-80 font-['CookieRun-Regular']">
+              <p
+                className={`opacity-80 font-['CookieRun-Regular'] ${
+                  screenWidth < 480 ? 'text-xs' : 'text-sm'
+                }`}
+              >
                 인증하고, 칭찬받고, 식물도 키워요
               </p>
             </motion.div>
