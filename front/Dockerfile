@@ -1,22 +1,16 @@
 # 빌드 단계
 FROM node:18-alpine as build
 WORKDIR /app
-
-# package.json 복사 (캐시 최적화)
-COPY front/package*.json ./
+COPY package*.json ./
 RUN npm install
-
-# 소스 코드 복사
-COPY front/ ./
-
-# 빌드
+COPY . .
 RUN NODE_OPTIONS="--max_old_space_size=4096" npm run build
 
-# 실행 단계
+# 실행 단계 - nginx 설정 파일 없이
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# nginx 설정
+# 기본 nginx 설정으로 SPA 지원
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
