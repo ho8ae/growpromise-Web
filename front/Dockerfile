@@ -3,14 +3,20 @@ FROM node:18-alpine as build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
-COPY . .
-RUN NODE_OPTIONS="--max_old_space_size=4096" npm run build
 
-# 실행 단계 - nginx 설정 파일 없이
+COPY . .
+
+# Vite 캐시 완전 제거
+RUN rm -rf node_modules/.vite
+RUN rm -rf .vite
+RUN rm -rf dist
+
+# CSS 강제 재생성으로 빌드
+RUN NODE_OPTIONS="--max_old_space_size=4096" npm run build -- --force
+
 FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# 기본 nginx 설정으로 SPA 지원
 RUN echo 'server { \
     listen 80; \
     server_name localhost; \
@@ -18,6 +24,11 @@ RUN echo 'server { \
     index index.html; \
     location / { \
         try_files $uri $uri/ /index.html; \
+    } \
+    # CSS 캐시 방지
+    location ~* \.(css|js)$ { \
+        expires -1; \
+        add_header Cache-Control "no-cache, no-store, must-revalidate"; \
     } \
     gzip on; \
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript; \
