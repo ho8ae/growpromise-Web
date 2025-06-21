@@ -1,12 +1,6 @@
 @import "tailwindcss";
 
-@font-face {
-    font-family: 'NanumBarunpen';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_two@1.0/NanumBarunpen.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
+/* 폰트 설정 */
 @font-face {
   font-family: 'CookieRun-Regular';
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
@@ -14,142 +8,26 @@
   font-style: normal;
 }
 
-body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-  }
-
-
-  :root {
-    --primary-color: #16a34a;
-    --primary-dark: #15803d;
-    --primary-light: #22c55e;
-    --accent-color: #eab308;
-    --accent-light: #facc15;
-    --background-light: #f0fdf4;
-    --text-dark: #111827;
-    --text-light: #ffffff;
-  }
-  
-  html {
-    scroll-behavior: smooth;
-  }
-  
-  body {
-    font-family: 'Inter', 'Noto Sans KR', sans-serif;
-    overflow-x: hidden;
-  }
-  
-  /* GSAP 애니메이션 지원 클래스 */
-  .gsap-reveal {
-    opacity: 0;
-  }
-
-
-/* 수평 슬라이드 섹션 스타일 */
-.horizontal-slide-container {
-  perspective: 1000px;
-  transform-style: preserve-3d;
-}
-
-.horizontal-slide-panel {
-  transition: transform 0.5s ease-out;
-}
-
-/* 패널이 화면 중앙에 도달했을 때 z축 위치 복원 */
-.horizontal-slide-panel.active {
-  transform: translateZ(0);
-}
-
-/* 이미지 시퀀스 스타일 */
-.image-sequence-container {
-  position: relative;
-  overflow: hidden;
-}
-
-.image-sequence-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  transition: opacity 0.1s ease;
-}
-
-/* 추가 애니메이션 효과 클래스 */
-.fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s, transform 0.6s;
-}
-
-.fade-in.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* 3D 요소 스타일 */
-.perspective-container {
-  perspective: 1000px;
-  perspective-origin: 50% 50%;
-}
-
-.rotate-on-scroll {
-  transform-style: preserve-3d;
-  transition: transform 0.5s ease-out;
-}
-
-/* GSAP에 의해 적용될 애니메이션의 시작 상태 */
-.gsap-fade-in {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.gsap-fade-left {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.gsap-fade-right {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-.gsap-scale-in {
-  opacity: 0;
-  transform: scale(0.9);
-}
-
-/* 스크롤 스냅 효과를 위한 스타일 */
+/* 기본 설정 */
 html {
   scroll-behavior: smooth;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .snap-container {
-    scroll-snap-type: y mandatory;
-    height: 100vh;
-    overflow-y: scroll;
-  }
-
-  .snap-section {
-    scroll-snap-align: start;
-    height: 100vh;
-  }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
-  
 
-
+/* 3D 모델 관련 - 위치 고정 */
 #phone-model {
-  position: relative;
+  position: relative !important;
   z-index: 0;
+  contain: layout style paint;
 }
 
 #phone-model canvas {
@@ -158,10 +36,19 @@ html {
   left: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  transform: none !important;
 }
 
 /* 레이아웃 시프트 방지 */
-.three-container {
-  min-height: 100vh;
+.model-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   contain: layout style paint;
+}
+
+/* 모바일 터치 개선 */
+.model-container canvas {
+  touch-action: none;
 }
