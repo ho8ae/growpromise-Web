@@ -9,6 +9,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
+      - NODE_OPTIONS=--max_old_space_size=4096  
+    mem_limit: 4g  
     networks:
       - growpromise-network
 
