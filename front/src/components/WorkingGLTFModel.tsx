@@ -20,11 +20,11 @@ interface CustomGLTFResult {
 }
 
 // 실제 GLTF 모델을 사용하는 컴포넌트
-const RealIPhoneModel = ({ 
+const RealIPhoneModel = ({
   modelPath,
   modelConfig,
-  onLoaded 
-}: { 
+  onLoaded,
+}: {
   modelPath: string;
   modelConfig: ModelConfig;
   onLoaded?: () => void;
@@ -47,8 +47,8 @@ const RealIPhoneModel = ({
 
   useEffect(() => {
     if (gltf.scene && onLoaded) {
-        onLoaded();
-      }
+      onLoaded();
+    }
 
     // 카메라 설정을 modelConfig에 따라 동적으로 조정
     setupCamera(camera, {
@@ -81,11 +81,14 @@ const RealIPhoneModel = ({
   }, [camera, gltf.materials, gltf.scene, modelConfig, onLoaded]);
 
   // 모델과의 교차점 검사 함수
-  const checkModelIntersection = (clientX: number, clientY: number): boolean => {
+  const checkModelIntersection = (
+    clientX: number,
+    clientY: number,
+  ): boolean => {
     if (!groupRef.current || !gl.domElement) return false;
 
     const rect = gl.domElement.getBoundingClientRect();
-    
+
     // 마우스 좌표를 정규화된 디바이스 좌표로 변환
     mouse.current.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     mouse.current.y = -((clientY - rect.top) / rect.height) * 2 + 1;
@@ -94,8 +97,11 @@ const RealIPhoneModel = ({
     raycaster.current.setFromCamera(mouse.current, camera);
 
     // 모델과의 교차점 검사
-    const intersects = raycaster.current.intersectObject(groupRef.current, true);
-    
+    const intersects = raycaster.current.intersectObject(
+      groupRef.current,
+      true,
+    );
+
     return intersects.length > 0;
   };
 
@@ -172,7 +178,7 @@ const RealIPhoneModel = ({
 
     // Canvas 요소에만 이벤트 리스너 등록
     const canvas = gl.domElement;
-    
+
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
@@ -194,6 +200,22 @@ const RealIPhoneModel = ({
   useFrame((state) => {
     if (groupRef.current) {
       if (!isDragging.current) {
+        // 5초마다 한 번씩 위치 로그
+        if (
+          Math.floor(Date.now() / 5000) !== Math.floor((Date.now() - 16) / 5000)
+        ) {
+          console.log('Model position:', {
+            x: groupRef.current.position.x,
+            y: groupRef.current.position.y,
+            z: groupRef.current.position.z,
+            rotation: {
+              x: groupRef.current.rotation.x,
+              y: groupRef.current.rotation.y,
+              z: groupRef.current.rotation.z,
+            },
+          });
+        }
+
         // 드래그 중이 아닐 때: 관성과 자동 회전
         velocity.current.x *= 0.95;
         velocity.current.y *= 0.95;
@@ -224,9 +246,9 @@ const RealIPhoneModel = ({
 
   return (
     // modelConfig의 scale과 position을 동적으로 적용
-    <group 
-      ref={groupRef} 
-      position={modelConfig.position} 
+    <group
+      ref={groupRef}
+      position={modelConfig.position}
       scale={modelConfig.scale}
     >
       <primitive object={gltf.scene} />
@@ -250,17 +272,23 @@ const SimpleIPhoneMockup = ({ modelConfig }: { modelConfig: ModelConfig }) => {
   const mouse = useRef(new THREE.Vector2());
 
   // 모델과의 교차점 검사 함수
-  const checkModelIntersection = (clientX: number, clientY: number): boolean => {
+  const checkModelIntersection = (
+    clientX: number,
+    clientY: number,
+  ): boolean => {
     if (!groupRef.current || !gl.domElement) return false;
 
     const rect = gl.domElement.getBoundingClientRect();
-    
+
     mouse.current.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     mouse.current.y = -((clientY - rect.top) / rect.height) * 2 + 1;
 
     raycaster.current.setFromCamera(mouse.current, camera);
-    const intersects = raycaster.current.intersectObject(groupRef.current, true);
-    
+    const intersects = raycaster.current.intersectObject(
+      groupRef.current,
+      true,
+    );
+
     return intersects.length > 0;
   };
 
@@ -325,7 +353,7 @@ const SimpleIPhoneMockup = ({ modelConfig }: { modelConfig: ModelConfig }) => {
     };
 
     const canvas = gl.domElement;
-    
+
     canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseup', handleMouseUp);
@@ -374,14 +402,20 @@ const SimpleIPhoneMockup = ({ modelConfig }: { modelConfig: ModelConfig }) => {
   const geometryScale = modelConfig.scale[0] * 0.1; // scale을 기반으로 geometry 크기 조정
 
   return (
-    <group 
-      ref={groupRef} 
-      position={modelConfig.position} 
+    <group
+      ref={groupRef}
+      position={modelConfig.position}
       scale={modelConfig.scale}
     >
       {/* 본체 */}
       <mesh>
-        <boxGeometry args={[0.8 * geometryScale, 1.6 * geometryScale, 0.08 * geometryScale]} />
+        <boxGeometry
+          args={[
+            0.8 * geometryScale,
+            1.6 * geometryScale,
+            0.08 * geometryScale,
+          ]}
+        />
         <meshStandardMaterial
           color="#58CC02"
           metalness={1.0}
@@ -393,31 +427,79 @@ const SimpleIPhoneMockup = ({ modelConfig }: { modelConfig: ModelConfig }) => {
 
       {/* 화면 */}
       <mesh position={[0, 0, 0.041 * geometryScale]}>
-        <boxGeometry args={[0.7 * geometryScale, 1.4 * geometryScale, 0.02 * geometryScale]} />
+        <boxGeometry
+          args={[
+            0.7 * geometryScale,
+            1.4 * geometryScale,
+            0.02 * geometryScale,
+          ]}
+        />
         <meshStandardMaterial color="#000000" metalness={0.9} roughness={0.1} />
       </mesh>
 
       {/* 카메라 */}
-      <group position={[-0.25 * geometryScale, 0.5 * geometryScale, 0.041 * geometryScale]}>
+      <group
+        position={[
+          -0.25 * geometryScale,
+          0.5 * geometryScale,
+          0.041 * geometryScale,
+        ]}
+      >
         <mesh>
-          <boxGeometry args={[0.15 * geometryScale, 0.15 * geometryScale, 0.02 * geometryScale]} />
+          <boxGeometry
+            args={[
+              0.15 * geometryScale,
+              0.15 * geometryScale,
+              0.02 * geometryScale,
+            ]}
+          />
           <meshStandardMaterial color="#2c3e50" />
         </mesh>
 
-        <mesh position={[0.03 * geometryScale, 0.03 * geometryScale, 0.015 * geometryScale]}>
-          <cylinderGeometry args={[0.025 * geometryScale, 0.025 * geometryScale, 0.01 * geometryScale]} />
+        <mesh
+          position={[
+            0.03 * geometryScale,
+            0.03 * geometryScale,
+            0.015 * geometryScale,
+          ]}
+        >
+          <cylinderGeometry
+            args={[
+              0.025 * geometryScale,
+              0.025 * geometryScale,
+              0.01 * geometryScale,
+            ]}
+          />
           <meshStandardMaterial color="#1a1a1a" />
         </mesh>
 
-        <mesh position={[-0.03 * geometryScale, 0.03 * geometryScale, 0.015 * geometryScale]}>
-          <cylinderGeometry args={[0.02 * geometryScale, 0.02 * geometryScale, 0.01 * geometryScale]} />
+        <mesh
+          position={[
+            -0.03 * geometryScale,
+            0.03 * geometryScale,
+            0.015 * geometryScale,
+          ]}
+        >
+          <cylinderGeometry
+            args={[
+              0.02 * geometryScale,
+              0.02 * geometryScale,
+              0.01 * geometryScale,
+            ]}
+          />
           <meshStandardMaterial color="#1a1a1a" />
         </mesh>
       </group>
 
       {/* 홈 버튼 (구형 스타일) */}
       <mesh position={[0, -0.6 * geometryScale, 0.041 * geometryScale]}>
-        <cylinderGeometry args={[0.04 * geometryScale, 0.04 * geometryScale, 0.01 * geometryScale]} />
+        <cylinderGeometry
+          args={[
+            0.04 * geometryScale,
+            0.04 * geometryScale,
+            0.01 * geometryScale,
+          ]}
+        />
         <meshStandardMaterial color="#333333" />
       </mesh>
     </group>
@@ -499,8 +581,8 @@ const WorkingGLTFModel: React.FC<WorkingGLTFModelProps> = ({
     scale: [8.0, 8.0, 8.0],
     position: [0, 0, 0],
     containerSize: { width: '100%', height: '100%' },
-    fov: 30
-  }
+    fov: 30,
+  },
 }) => {
   return (
     <div
