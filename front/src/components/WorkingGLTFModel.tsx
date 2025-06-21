@@ -49,12 +49,12 @@ const RealIPhoneModel = ({
     console.log('🎯 Starting delayed model setup...');
 
     // 충분한 지연 시간 제공 (모델이 완전히 로드될 때까지)
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 2초 대기
 
     try {
       // 카메라 설정을 modelConfig에 따라 동적으로 조정
       setupCamera(camera, {
-        position: [0, -0.9, 6], // 하드코딩 제거, 정상 위치로
+        position: [0, -0.4, 6], // 하드코딩 제거, 정상 위치로
         fov: modelConfig.fov,
         responsiveFOV: false,
       });
