@@ -22,10 +22,12 @@ interface CustomGLTFResult {
 // 실제 GLTF 모델을 사용하는 컴포넌트
 const RealIPhoneModel = ({ 
   modelPath,
-  modelConfig 
+  modelConfig,
+  onLoaded 
 }: { 
   modelPath: string;
   modelConfig: ModelConfig;
+  onLoaded?: () => void;
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
@@ -44,6 +46,10 @@ const RealIPhoneModel = ({
   const gltf = useGLTF(modelPath);
 
   useEffect(() => {
+    if (gltf.scene && onLoaded) {
+        onLoaded();
+      }
+
     // 카메라 설정을 modelConfig에 따라 동적으로 조정
     setupCamera(camera, {
       position: [0, 0.6, 6],
@@ -72,7 +78,7 @@ const RealIPhoneModel = ({
       // 모델을 중심으로 이동시켜서 회전축을 중앙으로 만들기
       gltf.scene.position.set(-center.x, -center.y, -center.z);
     }
-  }, [camera, gltf.materials, gltf.scene, modelConfig]);
+  }, [camera, gltf.materials, gltf.scene, modelConfig, onLoaded]);
 
   // 모델과의 교차점 검사 함수
   const checkModelIntersection = (clientX: number, clientY: number): boolean => {
@@ -471,6 +477,7 @@ interface WorkingGLTFModelProps {
   className?: string;
   style?: React.CSSProperties;
   modelConfig?: ModelConfig; // 새로 추가된 prop
+  onLoaded?: () => void;
 }
 
 const WorkingGLTFModel: React.FC<WorkingGLTFModelProps> = ({

@@ -60,6 +60,7 @@ const GrowPromiseLanding: React.FC = () => {
   const [modelConfig, setModelConfig] = useState<ModelConfig>(
     getModelConfig(1200),
   );
+  const [modelLoaded, setModelLoaded] = useState(false);
 
   // 화면 크기 감지 및 모델 설정 업데이트
   useEffect(() => {
@@ -105,6 +106,7 @@ const GrowPromiseLanding: React.FC = () => {
                 <WorkingGLTFModel
                   modelPath="/models/growpromise_iphone3D.glb"
                   modelConfig={modelConfig}
+                  onLoaded={() => setModelLoaded(true)}
                 />
               </div>
             </div>
@@ -261,6 +263,7 @@ const GrowPromiseLanding: React.FC = () => {
                 <WorkingGLTFModel
                   modelPath="/models/growpromise_iphone3D.glb"
                   modelConfig={modelConfig}
+                  onLoaded={() => setModelLoaded(true)} 
                 />
               </div>
             </div>
