@@ -54,7 +54,7 @@ const RealIPhoneModel = ({
     try {
       // 카메라 설정을 modelConfig에 따라 동적으로 조정
       setupCamera(camera, {
-        position: [0, 0, 6], // 하드코딩 제거, 정상 위치로
+        position: [0, 0.6, 6], // 하드코딩 제거, 정상 위치로
         fov: modelConfig.fov,
         responsiveFOV: false,
       });
@@ -130,16 +130,16 @@ const RealIPhoneModel = ({
     return intersects.length > 0;
   };
 
-  // 디버깅 정보
-  useEffect(() => {
-    console.log('=== 모델 디버깅 정보 ===');
-    console.log('Environment:', process.env.NODE_ENV);
-    console.log('URL:', window.location.href);
-    console.log('Screen size:', window.innerWidth, 'x', window.innerHeight);
-    console.log('Model config:', modelConfig);
-    console.log('Model ready:', isModelReady);
-    console.log('Setup complete:', modelSetupComplete.current);
-  }, [modelConfig, isModelReady]);
+//   // 디버깅 정보
+//   useEffect(() => {
+//     console.log('=== 모델 디버깅 정보 ===');
+//     console.log('Environment:', process.env.NODE_ENV);
+//     console.log('URL:', window.location.href);
+//     console.log('Screen size:', window.innerWidth, 'x', window.innerHeight);
+//     console.log('Model config:', modelConfig);
+//     console.log('Model ready:', isModelReady);
+//     console.log('Setup complete:', modelSetupComplete.current);
+//   }, [modelConfig, isModelReady]);
 
   // 이벤트 핸들러는 모델이 준비된 후에만 등록
   useEffect(() => {

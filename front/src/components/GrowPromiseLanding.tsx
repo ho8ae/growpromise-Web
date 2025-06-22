@@ -104,7 +104,7 @@ const GrowPromiseLanding: React.FC = () => {
                 }}
               >
                 <WorkingGLTFModel
-                  modelPath="/models/growpromise_iphone3D.glb"
+                  modelPath="/models/iphone.glb"
                   modelConfig={modelConfig}
                   onLoaded={() => setModelLoaded(true)}
                 />
@@ -261,7 +261,7 @@ const GrowPromiseLanding: React.FC = () => {
                 }}
               >
                 <WorkingGLTFModel
-                  modelPath="/models/growpromise_iphone3D.glb"
+                  modelPath="/models/iphone.glb"
                   modelConfig={modelConfig}
                   onLoaded={() => setModelLoaded(true)} 
                 />
