@@ -24,7 +24,7 @@ const RealIPhoneModel = ({
 }) => {
   const groupRef = useRef<THREE.Group>(null);
   const { camera, gl } = useThree();
-  
+
   // 모델 초기화 상태 추적
   const [isModelReady, setIsModelReady] = useState(false);
   const modelSetupComplete = useRef(false);
@@ -49,12 +49,12 @@ const RealIPhoneModel = ({
     console.log('🎯 Starting delayed model setup...');
 
     // 충분한 지연 시간 제공 (모델이 완전히 로드될 때까지)
-    await new Promise(resolve => setTimeout(resolve, 1000)); // 2초 대기
+    await new Promise(resolve => setTimeout(resolve, 1000)); // 1초 대기
 
     try {
       // 카메라 설정을 modelConfig에 따라 동적으로 조정
       setupCamera(camera, {
-        position: [0, 0.6, 6], // 하드코딩 제거, 정상 위치로
+        position: [0, 0, 6], // 하드코딩 제거, 정상 위치로
         fov: modelConfig.fov,
         responsiveFOV: false,
       });
@@ -94,7 +94,6 @@ const RealIPhoneModel = ({
       if (onLoaded) {
         setTimeout(() => onLoaded(), 200); // 추가 안정화 시간
       }
-
     } catch (error) {
       console.error('❌ Model setup failed:', error);
       // 실패해도 모델을 표시
@@ -129,17 +128,6 @@ const RealIPhoneModel = ({
 
     return intersects.length > 0;
   };
-
-//   // 디버깅 정보
-//   useEffect(() => {
-//     console.log('=== 모델 디버깅 정보 ===');
-//     console.log('Environment:', process.env.NODE_ENV);
-//     console.log('URL:', window.location.href);
-//     console.log('Screen size:', window.innerWidth, 'x', window.innerHeight);
-//     console.log('Model config:', modelConfig);
-//     console.log('Model ready:', isModelReady);
-//     console.log('Setup complete:', modelSetupComplete.current);
-//   }, [modelConfig, isModelReady]);
 
   // 이벤트 핸들러는 모델이 준비된 후에만 등록
   useEffect(() => {
@@ -276,10 +264,254 @@ const RealIPhoneModel = ({
   );
 };
 
-// 나머지 컴포넌트들은 동일...
+// 간단한 iPhone 목업 (GLTF 파일이 없을 때)
 const SimpleIPhoneMockup = ({ modelConfig }: { modelConfig: ModelConfig }) => {
-  // ... 기존 코드 동일
-  return <div>SimpleIPhoneMockup</div>;
+  const groupRef = useRef<THREE.Group>(null);
+  const { camera, gl } = useThree();
+
+  // 물리 회전을 위한 상태
+  const velocity = useRef({ x: 0, y: 0 });
+  const lastMousePos = useRef({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const autoRotateSpeed = useRef(0.005);
+
+  // Raycaster for model intersection detection
+  const raycaster = useRef(new THREE.Raycaster());
+  const mouse = useRef(new THREE.Vector2());
+
+  // 모델과의 교차점 검사 함수
+  const checkModelIntersection = (
+    clientX: number,
+    clientY: number,
+  ): boolean => {
+    if (!groupRef.current || !gl.domElement) return false;
+
+    const rect = gl.domElement.getBoundingClientRect();
+
+    mouse.current.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.current.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.current.setFromCamera(mouse.current, camera);
+    const intersects = raycaster.current.intersectObject(
+      groupRef.current,
+      true,
+    );
+
+    return intersects.length > 0;
+  };
+
+  useEffect(() => {
+    // 카메라 설정
+    setupCamera(camera, {
+      position: [0, 0, 6],
+      fov: modelConfig.fov,
+    });
+
+    // 이벤트 핸들러 로직 (기존과 동일)
+    const handleStart = (clientX: number, clientY: number) => {
+      if (!checkModelIntersection(clientX, clientY)) return;
+      isDragging.current = true;
+      lastMousePos.current = { x: clientX, y: clientY };
+      velocity.current = { x: 0, y: 0 };
+    };
+
+    const handleMove = (clientX: number, clientY: number) => {
+      if (!isDragging.current) return;
+      const deltaX = clientX - lastMousePos.current.x;
+      const deltaY = clientY - lastMousePos.current.y;
+      velocity.current.x = deltaY * 0.01;
+      velocity.current.y = deltaX * 0.01;
+      lastMousePos.current = { x: clientX, y: clientY };
+    };
+
+    const handleEnd = () => {
+      isDragging.current = false;
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      e.preventDefault();
+      handleStart(e.clientX, e.clientY);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      e.preventDefault();
+      handleMove(e.clientX, e.clientY);
+    };
+
+    const handleMouseUp = (e: MouseEvent) => {
+      e.preventDefault();
+      handleEnd();
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      handleStart(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      handleMove(touch.clientX, touch.clientY);
+    };
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      e.preventDefault();
+      handleEnd();
+    };
+
+    const canvas = gl.domElement;
+
+    canvas.addEventListener('mousedown', handleMouseDown);
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('touchstart', handleTouchStart);
+      canvas.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [camera, gl.domElement, modelConfig]);
+
+  useFrame((state) => {
+    if (groupRef.current) {
+      if (!isDragging.current) {
+        velocity.current.x *= 0.95;
+        velocity.current.y *= 0.95;
+
+        if (
+          Math.abs(velocity.current.x) < 0.001 &&
+          Math.abs(velocity.current.y) < 0.001
+        ) {
+          velocity.current.y = autoRotateSpeed.current;
+        }
+      }
+
+      groupRef.current.rotation.x += velocity.current.x;
+      groupRef.current.rotation.y += velocity.current.y;
+
+      if (
+        !isDragging.current &&
+        Math.abs(velocity.current.y - autoRotateSpeed.current) < 0.005
+      ) {
+        groupRef.current.position.y =
+          Math.sin(state.clock.elapsedTime * 0.8) * 0.05;
+      }
+    }
+  });
+
+  // 화면 크기에 따른 geometry 크기 조정
+  const geometryScale = modelConfig.scale[0] * 0.1; // scale을 기반으로 geometry 크기 조정
+
+  return (
+    <group
+      ref={groupRef}
+      position={modelConfig.position}
+      scale={modelConfig.scale}
+    >
+      {/* 본체 */}
+      <mesh>
+        <boxGeometry
+          args={[
+            0.8 * geometryScale,
+            1.6 * geometryScale,
+            0.08 * geometryScale,
+          ]}
+        />
+        <meshStandardMaterial
+          color="#58CC02"
+          metalness={1.0}
+          roughness={0.1}
+          emissive="#58CC02"
+          emissiveIntensity={0.05}
+        />
+      </mesh>
+
+      {/* 화면 */}
+      <mesh position={[0, 0, 0.041 * geometryScale]}>
+        <boxGeometry
+          args={[
+            0.7 * geometryScale,
+            1.4 * geometryScale,
+            0.02 * geometryScale,
+          ]}
+        />
+        <meshStandardMaterial color="#000000" metalness={0.9} roughness={0.1} />
+      </mesh>
+
+      {/* 카메라 */}
+      <group
+        position={[
+          -0.25 * geometryScale,
+          0.5 * geometryScale,
+          0.041 * geometryScale,
+        ]}
+      >
+        <mesh>
+          <boxGeometry
+            args={[
+              0.15 * geometryScale,
+              0.15 * geometryScale,
+              0.02 * geometryScale,
+            ]}
+          />
+          <meshStandardMaterial color="#2c3e50" />
+        </mesh>
+
+        <mesh
+          position={[
+            0.03 * geometryScale,
+            0.03 * geometryScale,
+            0.015 * geometryScale,
+          ]}
+        >
+          <cylinderGeometry
+            args={[
+              0.025 * geometryScale,
+              0.025 * geometryScale,
+              0.01 * geometryScale,
+            ]}
+          />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+
+        <mesh
+          position={[
+            -0.03 * geometryScale,
+            0.03 * geometryScale,
+            0.015 * geometryScale,
+          ]}
+        >
+          <cylinderGeometry
+            args={[
+              0.02 * geometryScale,
+              0.02 * geometryScale,
+              0.01 * geometryScale,
+            ]}
+          />
+          <meshStandardMaterial color="#1a1a1a" />
+        </mesh>
+      </group>
+
+      {/* 홈 버튼 (구형 스타일) */}
+      <mesh position={[0, -0.6 * geometryScale, 0.041 * geometryScale]}>
+        <cylinderGeometry
+          args={[
+            0.04 * geometryScale,
+            0.04 * geometryScale,
+            0.01 * geometryScale,
+          ]}
+        />
+        <meshStandardMaterial color="#333333" />
+      </mesh>
+    </group>
+  );
 };
 
 const ModelLoader = () => {
