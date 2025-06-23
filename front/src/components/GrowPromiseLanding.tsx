@@ -84,7 +84,8 @@ const GrowPromiseLanding: React.FC = () => {
   };
 
   const handlePlayStoreClick = (): void => {
-    alert('곧 Google Play에서 만나보실 수 있어요! ');
+    window.location.href =
+      'https://play.google.com/store/apps/details?id=com.low_k.growpromise';
   };
 
   return (
